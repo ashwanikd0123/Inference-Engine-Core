@@ -111,6 +111,10 @@ void startTPTPtests() {
 			token = parser.getNextToken();
 			std::vector<AtpToken> tokens;
 			switch (token.type) {
+			case END_OF_FILE:
+				endOfFile = true;
+				break;
+
 			case COMMENT:
 				if (!statusFound && token.value.contains("Status   :")) {
 					// getting the status of the problem
@@ -127,6 +131,7 @@ void startTPTPtests() {
 					statusFound = true;
 					if (statusMap.find(st) != statusMap.end()) {
 						status = statusMap[st];
+						std::cout << "status of the problem is " << ((status == THEOREM) ? "THEOREM" : "UNSATISFIABLE") << std::endl;
 					}
 					else {
 						status = 0;
@@ -146,12 +151,11 @@ void startTPTPtests() {
 					}
 					if (!st.contains("FOF")) {
 						isFof = false;
+						std::cout << "invalid FOF problem...\n skipping..." << std::endl;
 					}
-				}
-				else {
-					std::cout <<
-						escapeCharNames.find(token.type)->second
-						<< " : " << token.value << std::endl;
+					else {
+						std::cout << "valid FOF problem..." << std::endl;
+					}
 				}
 				break;
 
@@ -186,10 +190,6 @@ void startTPTPtests() {
 				}
 				break;
 
-			case END_OF_FILE:
-				endOfFile = true;
-				break;
-
 			case LANGUAGE_NAME:
 				tokens.push_back(token);
 				token = parser.getNextToken();
@@ -213,7 +213,6 @@ void startTPTPtests() {
 			}
 		}
 
-		std::cout << "status of the problem is " << status << std::endl;
 		parser.close();
 		return;
 	}
