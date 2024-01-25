@@ -9,16 +9,18 @@
 
 #include "AtpParser.h"
 #include "AtpToken.h"
+#include "AtpKnBase.h"
 
 #define THEOREM 1
 #define UNSATISFIABLE 2
 
 extern int mode;
+extern void errorLog(std::string msg);
 
 const std::string axiomDir = "tptp\\Axioms";
 const std::string problemDir = "tptp\\Problems";
 
-extern void errorLog(std::string msg);
+AtpKnBase knowledgeBase;
 
 std::string joinFilePath(std::string a, std::string b) {
 	return a + '\\' + b;
@@ -47,14 +49,23 @@ void readAxioms(std::string fileName) {
 	bool endOfFile = false;
 	while (parser.haveNextToken()) {
 		token = parser.getNextToken();
+		std::vector<AtpToken> tokens;
 		switch (token.type) {
 		case END_OF_FILE:
 			endOfFile = true;
 			break;
-		default:
-			std::cout <<
-				escapeCharNames.find(token.type)->second
-				<< " : " << token.value << std::endl;
+
+		case LANGUAGE_NAME:
+			tokens.push_back(token);
+			token = parser.getNextToken();
+			while (token.type != END_SENTENCE) {
+				tokens.push_back(token);
+				token = parser.getNextToken();
+			}
+			tokens.push_back(token);
+
+			knowledgeBase.parseFormula(tokens);
+			break;
 		}
 
 		if (endOfFile) {
@@ -85,6 +96,8 @@ void startTPTPtests() {
 			continue;
 		}
 
+		knowledgeBase.init();
+
 		std::cout << "problem: " << problem << std::endl;
 		parser.setFileName(joinFilePath(problemDir, problem));
 		AtpToken token(ANY, "");
@@ -96,6 +109,7 @@ void startTPTPtests() {
 		bool endOfFile = false;
 		while (parser.haveNextToken()) {
 			token = parser.getNextToken();
+			std::vector<AtpToken> tokens;
 			switch (token.type) {
 			case COMMENT:
 				if (!statusFound && token.value.contains("Status   :")) {
@@ -140,6 +154,7 @@ void startTPTPtests() {
 						<< " : " << token.value << std::endl;
 				}
 				break;
+
 			case FILE_INCLUDE:
 				token = parser.getNextToken();
 				if (token.type == BRACKET_ROUND_START) {
@@ -170,13 +185,22 @@ void startTPTPtests() {
 					exit(7);
 				}
 				break;
+
 			case END_OF_FILE:
 				endOfFile = true;
 				break;
-			default:
-				std::cout << 
-					escapeCharNames.find(token.type)->second 
-					<< " : " << token.value << std::endl;
+
+			case LANGUAGE_NAME:
+				tokens.push_back(token);
+				token = parser.getNextToken();
+				while (token.type != END_SENTENCE) {
+					tokens.push_back(token);
+					token = parser.getNextToken();
+				}
+				tokens.push_back(token);
+
+				knowledgeBase.parseFormula(tokens);
+				break;
 			}
 
 			if (endOfFile) {
