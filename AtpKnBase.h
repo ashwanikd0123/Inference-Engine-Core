@@ -7,9 +7,10 @@
 
 class AtpKnBase
 {
-	std::set<AtpStatement> statements;
-	//std::unordered_map<AtpTerm, std::string> termMap;
-	//std::unordered_map<std::string, AtpTerm> varMap;
+	std::set<AtpStatement> axioms;
+	std::set<AtpStatement> conjenctures;
+	std::unordered_map<AtpTerm, std::string> termMap;
+	std::unordered_map<std::string, AtpTerm> varMap;
 
 public:
 	void init();

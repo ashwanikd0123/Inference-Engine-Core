@@ -2,9 +2,10 @@
 
 void AtpKnBase::init()
 {
-	this->statements.clear();
-	//this->termMap.clear();
-	//this->varMap.clear();
+	this->axioms.clear();
+	this->conjenctures.clear();
+	this->termMap.clear();
+	this->varMap.clear();
 }
 
 void AtpKnBase::parseFormula(std::vector<AtpToken> tokens)

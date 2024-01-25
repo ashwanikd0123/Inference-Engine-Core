@@ -1,4 +1,6 @@
 #pragma once
+#include <functional>
+
 enum AtpTermType {
 	CONSTANT,
 	VARIABLE
@@ -27,3 +29,11 @@ public:
 	}
 };
 
+template <>
+struct std::hash<AtpTerm>
+{
+	std::size_t operator()(const AtpTerm& term) const
+	{
+		return term.value;
+	}
+};
