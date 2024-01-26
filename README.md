@@ -1,5 +1,8 @@
 # Inference-engine-core
-basic command line inference engine based on first order logic
+This project aims on developing a simple First order Inference or an Automated Theorem Prover (ATP) Engine From Scratch.<br>
+The database that we are using for testing out ATP system is TPTP (Official www.tptp.org). which uses Syntax BNF for custom representation of First order formula described below.<br>
+The original documentation can be collected from official page of TPTP.
+I have also explained the Forst order formula syntax that our system is dealing with.
 
 <h1>TPTP Syntax</h1>
 <h2>Problem and Axiomatization Naming</h2>
@@ -86,254 +89,93 @@ This field gives the ATP status of the problem, according to the SZS problem sta
     </li>
 </ol>
 
-<h2>Domain Structure</h2>
-<p />
-In TPTP problems are divided in different domains based on the type of the problem it came from. following table indicates the classification.
-<br />
-<TABLE>
-    <TR VALIGN=TOP>
-        <TD> Logic
-        <TD> Combinatory logic
-        <TD>
-        <TD> <TT>COL</TT>
-    <TR>
-        <TD>
-        <TD> Logic calculi
-        <TD>
-        <TD> <TT>LCL</TT>
-    <TR>
-        <TD>
-        <TD> Henkin models
-        <TD>
-        <TD> <TT>HEN</TT>
-    <TR VALIGN=TOP>
-        <TD> Mathematics
-        <TD> Set theory
-        <TD>
-        <TD> <TT>SET</TT>, <TT>SEU</TT>, and <TT>SEV</TT>
-    <TR>
-        <TD>
-        <TD> Graph theory
-        <TD>
-        <TD> <TT>GRA</TT>
-    <TR>
-        <TD>
-        <TD> Algebra
-        <TD> Relation algebra
-        <TD> <TT>REL</TT>
-    <TR>
-        <TD>
-        <TD>
-        <TD> MV Algebras
-        <TD> <TT>MVA</TT>
-    <TR>
-        <TD>
-        <TD>
-        <TD> Boolean algebra
-        <TD> <TT>BOO</TT>
-    <TR>
-        <TD>
-        <TD>
-        <TD> Robbins algebra
-        <TD> <TT>ROB</TT>
-    <TR>
-        <TD>
-        <TD>
-        <TD> Left distributive
-        <TD> <TT>LDA</TT>
-    <TR>
-        <TD>
-        <TD>
-        <TD> Lattices
-        <TD> <TT>LAT</TT>
-    <TR>
-        <TD>
-        <TD>
-        <TD> Quantales
-        <TD> <TT>QUA</TT>
-    <TR>
-        <TD>
-        <TD>
-        <TD> Kleene algebra
-        <TD> <TT>KLE</TT>
-    <TR>
-        <TD>
-        <TD>
-        <TD> Groups
-        <TD> <TT>GRP</TT>
-    <TR>
-        <TD>
-        <TD>
-        <TD> Rings
-        <TD> <TT>RNG</TT>
-    <TR>
-        <TD>
-        <TD>
-        <TD> Fields
-        <TD> <TT>FLD</TT>
-    <TR>
-        <TD>
-        <TD>
-        <TD> Homological algebra
-        <TD> <TT>HAL</TT>
-    <TR>
-        <TD>
-        <TD>
-        <TD> Real Algebra
-        <TD> <TT>RAL</TT>
-    <TR>
-        <TD>
-        <TD>
-        <TD> General algebra
-        <TD> <TT>ALG</TT>
-    <TR>
-        <TD>
-        <TD> Number theory
-        <TD>
-        <TD> <TT>NUM</TT> and <TT>NUN</TT>
-    <TR>
-        <TD>
-        <TD> Topology
-        <TD>
-        <TD> <TT>TOP</TT>
-    <TR>
-        <TD>
-        <TD> Analysis
-        <TD>
-        <TD> <TT>ANA</TT>
-    <TR>
-        <TD>
-        <TD> Geometry
-        <TD>
-        <TD> <TT>GEO</TT>
-    <TR>
-        <TD>
-        <TD> Category theory
-        <TD>
-        <TD> <TT>CAT</TT>
-    <TR VALIGN=TOP>
-        <TD> Computer science
-        <TD> Computing theory
-        <TD>
-        <TD> <TT>COM</TT>
-    <TR>
-        <TD>
-        <TD> Knowledge representation
-        <TD>
-        <TD> <TT>KRS</TT>
-    <TR>
-        <TD>
-        <TD> Natural Language Processing
-        <TD>
-        <TD> <TT>NLP</TT>
-    <TR>
-        <TD>
-        <TD> Planning
-        <TD>
-        <TD> <TT>PLA</TT>
-    <TR>
-        <TD>
-        <TD> Agents
-        <TD>
-        <TD> <TT>AGT</TT>
-    <TR>
-        <TD>
-        <TD> Commonsense Reasoning
-        <TD>
-        <TD> <TT>CSR</TT>
-    <TR>
-        <TD>
-        <TD> Semantic Web
-        <TD>
-        <TD> <TT>SWB</TT>
-    <TR>
-        <TD>
-        <TD> Interactive Theorem Proving
-        <TD>
-        <TD> <TT>ITP</TT>
-    <TR>
-        <TD>
-        <TD> Data Structures
-        <TD>
-        <TD> <TT>DAT</TT>
-    <TR>
-        <TD>
-        <TD> Software creation
-        <TD>
-        <TD> <TT>SWC</TT>
-    <TR>
-        <TD>
-        <TD> Software verification
-        <TD>
-        <TD> <TT>SWV</TT> and <TT>SWW</TT>
-    <TR>
-        <TD> Science and Engineering
-        <TD> Biology
-        <TD>
-        <TD> <TT>BIO</TT>
-    <TR>
-        <TD>
-        <TD> Hardware creation
-        <TD>
-        <TD> <TT>HWC</TT>
-    <TR>
-        <TD>
-        <TD> Hardware verification
-        <TD>
-        <TD> <TT>HWV</TT>
-    <TR>
-        <TD>
-        <TD> Medicine
-        <TD>
-        <TD> <TT>MED</TT>
-    <TR>
-        <TD>
-        <TD> Processes
-        <TD>
-        <TD> <TT>PRO</TT>
-    <TR>
-        <TD>
-        <TD> Products
-        <TD>
-        <TD> <TT>PRD</TT>
-    <TR>
-        <TD> Social sciences
-        <TD> Social Choice Theory
-        <TD>
-        <TD> <TT>SCT</TT>
-    <TR>
-        <TD>
-        <TD> Management
-        <TD>
-        <TD> <TT>MGT</TT>
-    <TR>
-        <TD>
-        <TD> Geography
-        <TD>
-        <TD> <TT>GEG</TT>
-    <TR>
-        <TD> Arts and Humanities
-        <TD> Philosophy
-        <TD>
-        <TD> <TT>PHI</TT>
-    <TR>
-        <TD> Other
-        <TD> Arithmetic
-        <TD>
-        <TD> <TT>ARI</TT>
-    <TR>
-        <TD>
-        <TD> Syntactic
-        <TD>
-        <TD> <TT>SYN</TT> and <TT>SYO</TT>
-    <TR>
-        <TD>
-        <TD> Puzzles
-        <TD>
-        <TD> <TT>PUZ</TT>
-    <TR>
-        <TD>
-        <TD> Miscellaneous
-        <TD>
-        <TD> <TT>MSC</TT>
-</TABLE>
+<h2>Syntax BNF</h2>
+<h3>First order formula (fof) Syntax</h3>
+First order formula is written as following syntax:</br>
+<i>
+fof(&lt;name&gt;,&lt;formula_role&gt;,&lt;fof_formula&gt;).
+</i>
+</br>
+
+In the above syntax following is followed:
+<ul>
+<li><b>name:</b> name is just a unique string related to formula which indicates its source and other infos. this is not relavant to inference system.</li>
+<li><b>formula_role:</b> this indicates the role of formula that has to be stored in knowledge base. in our case it could be an axiom or conjencture indicating its relation to the data given.</li>
+<li><b>fof_formula</b>: this is the fof formula we need in inference system. its syntax will be explained in the next section.</li>
+</ul>
+
+<h3>First order formula Language</h3>
+A 1st order language consists of three sets of symbols:
+<ol>
+<li>V is a set of <b>variables</b> (might be infinitely large).</li>
+<li>F is a set of <b>Functors</b> each of which have an <b>arity</b>. The arity specifies the number of arguments they take (see below). Functors of arity 0 are constants.</li>
+<li>P is a set of <b>predicate</b> symbols, each of which has an <b>arity</b>. Predicate symbols of arity 0 are propositions.</li>
+</ol>
+Rules:
+<ul>
+<li>Variable names always start with uppercase letters.</li>
+<li>Functors and Predicates always start with lower case letters.</li>
+<li>Functors and Predicates are distinguished by the context.</li>
+</ul>
+
+Two types of expressions are build from the above components of the language. Terms and Atoms.
+
+<h4>Term</h4>
+Terms are used to denote (possibly arbitrary) objects in the domain of interest. Terms thus correspond roughly to data in conventional programming. Terms are defined recursively by:
+<ol>
+<li>A functor of arity 0 (a constant) is a term</li>
+<li>A variable is a term</li>
+<li>A functor with the appropriate number of terms as arguments, is a term.
+</ol>
+
+<h4>Atom</h4>
+The second type of expression is atoms, which correspond to the propositions of propositional logic. Atoms decribe relationships between terms (objects in the domain). Atoms are defined by:
+<ol>
+<li>A predicate symbol of arity 0 (a proposition) is an atom</li>
+<li>A predicate symbol with the appropriate number of terms as arguments, is an atom.</li>
+</ol>
+
+<h4>Connectives</h4>
+Connectives are used to combine atoms into the formulae of 1st order logic. The connectives include all those used in propositional logic, and two new quantifiers:
+<ol>
+<li>~ for negation.</li>
+<li>& for conjunction.</li>
+<li>| for disjunction.</li>
+<li>=> for implication.</li>
+<li><=> for equivalence.</li>
+<li><~> for exclusive or (XOR).</li>
+<li>! for universal quantification.</li>
+<li>? for existential quantification.</li>
+</ol>
+
+The precedence order of the above operators is ! ? ~ | & => <=>, i.e., ! and ? bind most tightly, down to <=>.
+
+<h4>Literals</h4>
+Atoms and the negations of atoms are called literals.
+
+<h4>Ground formulae</h4>
+Ground formulae are formulae that contain no variables.
+
+<h3>Equality</h3>
+In many First order formulae equality among terms and predicates is present. To resolve these cases, the notion of equality must be introduced in the ATP.<br>
+For this purpose we need to define equality axioms for out ATP to successfylly resolve these equalities.
+
+<h4>Equality Axioms</h4>
+Although the conjecture may seem like a logical consequence to humans, that's because humans "know" what equal means (even without knowing what the "maths" means). However, there are many models of the axioms that are not a models of the conjecture, e.g., simply by making even(sum(four,b)) be FALSE. Such models are possible because the axioms are missing definitions for equality. These definitions are the axioms of equality, and must be included to force equality to have its usual meaning. They are:
+<ul>
+<li><b>Reflexivity</b> - everything equals itself</li>
+<li><b>Symmetry</b> - If X equals Y then Y equals X</li>
+<li><b>Transitivity</b> - If X equals Y and Y equals Z, then X equals Z</li>
+</ul>
+
+Rules corresponding to above axioms are:
+<ul>
+<li>!X (X = X)</li>
+<li>!X !Y (X = Y => Y = X)</li>
+<li>!X !Y !Z ((X = Y & Y = Z) => X = Z)</li>
+</ul>
+<h4>References</h4>
+<ul>
+<li> www.tptp.org
+<li> https://www.cs.miami.edu/home/geoff/Courses/CSC648-12S/Content/1stOrder.shtml#:~:text=Connectives%20are%20used%20to%20combine,%E2%88%A8%20or%20%7C%20for%20disjunction.
+</ul>
