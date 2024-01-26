@@ -66,7 +66,7 @@ void AtpKnBase::parseFormula(std::vector<AtpToken> tokens)
 					}
 					temp = *(++it);
 					if (temp.type == COMMA) {
-						for (int i = 7; i < tokens.size() - 2; i++) {
+						for (int i = 6; i < tokens.size() - 2; i++) {
 							parsingTokens.push_back(AtpParsingElement(&tokens[i]));
 						}
 					}
