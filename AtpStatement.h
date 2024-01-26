@@ -1,9 +1,16 @@
 #pragma once
 #include "AtpClause.h"
 
+enum AtpStatementType {
+	AXIOM,
+	CONJENCTURE
+};
+
 class AtpStatement
 {
 public:
+	AtpStatementType type;
+	std::string name;
 	std::set<AtpClause> clauses;
 	int value;
 

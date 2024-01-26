@@ -20,6 +20,10 @@ public:
     // operator overloading
     bool operator ==(const AtpActor& actor) const
     {
+        if (this->polarity != actor.polarity) {
+            return false;
+        }
+
         if (this->terms.size() != actor.terms.size() ||
             this->actors.size() != actor.actors.size()) {
             return false;

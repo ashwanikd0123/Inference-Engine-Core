@@ -1,6 +1,8 @@
 #pragma once
 #include "AtpToken.h"
 #include <vector>
+#include <iterator>
+#include <stack>
 #include <iostream>
 #include <unordered_map>
 #include "AtpStatement.h"
@@ -14,6 +16,9 @@ class AtpKnBase
 
 public:
 	void init();
+	void addAxiom(AtpStatement statement);
+	void addConjencture(AtpStatement statement);
 	void parseFormula(std::vector<AtpToken> tokens);
 };
+
 
