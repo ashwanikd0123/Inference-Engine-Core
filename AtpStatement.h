@@ -1,5 +1,5 @@
 #pragma once
-#include "AtpClause.h"
+#include "AtpFormula.h"
 
 enum AtpStatementType {
 	AXIOM,
@@ -9,25 +9,27 @@ enum AtpStatementType {
 class AtpStatement
 {
 public:
-	AtpStatementType type;
-	std::string name;
-	std::set<AtpClause> clauses;
 	int value;
+	std::string name;
+	
+	std::set<AtpTerm> terms;
+	AtpFormula formula;
+	AtpStatementType type;
 
 	// operator overloading
 	bool operator==(const AtpStatement& statement) const
 	{
-		if (this->clauses.size() != statement.clauses.size()) {
+		if (this->terms.size() != statement.terms.size()) {
 			return false;
 		}
 
-		for (auto& clause : this->clauses) {
-			if (statement.clauses.find(clause) == statement.clauses.end()) {
+		for (auto& t : terms) {
+			if (statement.terms.find(t) == statement.terms.end()) {
 				return false;
 			}
 		}
 
-		return true;
+		return this->formula == statement.formula;
 	}
 
 	bool operator>(const AtpStatement& statement) const
