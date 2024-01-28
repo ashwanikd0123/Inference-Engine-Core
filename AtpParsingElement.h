@@ -1,27 +1,38 @@
 #pragma once
 #include "AtpKnBase.h"
 enum AtpElementType {
-	TOKEN,
-	CLAUSE,
-	STATEMENT,
-	ACTOR
+	_TOKEN,
+	_VARIABLE,
+	_FUNCTOR,
+	_TERM,
+	_PREDICATE,
+	_LITERAL,
+	_FORMULA,
+	_STATEMENT
 };
 
 class AtpParsingElement
 {
 public:
 	AtpElementType type;
-
+	
+	AtpToken* valueToken;
+	
+	AtpVariable* valueVariable;
+	AtpFunctor* valueFunctor;
+	AtpTerm* valueTerm;
+	AtpPredicate* valuePredicate;
+	AtpLiteral* valueLiteral;
+	AtpFormula* formula;
 	AtpStatement *valueStatement;
-	AtpToken *valueToken;
 
 	AtpParsingElement(AtpStatement* valueStatement) {
-		this->type = STATEMENT;
+		this->type = _STATEMENT;
 		this->valueStatement = valueStatement;
 	}
 
 	AtpParsingElement(AtpToken* valueToken) {
-		this->type = TOKEN;
+		this->type = _TOKEN;
 		this->valueToken = valueToken;
 	}
 };

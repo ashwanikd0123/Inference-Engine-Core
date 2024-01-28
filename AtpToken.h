@@ -17,7 +17,6 @@ enum TokenType {
 	COMMA,
 	COLON,
 	OP_EQUALS,
-	OP_NOT_EQUALS,
 	OP_AND,
 	OP_OR,
 	OP_NOT,
@@ -30,7 +29,13 @@ enum TokenType {
 	FILE_NAME,
 	NEW_LINE,
 	VAR_NAME,
-	END_OF_FILE
+	END_OF_FILE,
+
+	// multi symbol tokens
+	OP_IMPLICATION,
+	OP_EQUIVALENCE,
+	OP_XOR,
+	OP_NOT_EQUALS,
 };
 
 const std::unordered_map<TokenType, std::string> escapeCharNames = {
@@ -46,7 +51,6 @@ const std::unordered_map<TokenType, std::string> escapeCharNames = {
 	{COMMA, "COMMA"},
 	{COLON, "COLON"},
 	{OP_EQUALS, "OP_EQUALS"},
-	{OP_NOT_EQUALS, "OP_NOT_EQUALS"},
 	{OP_AND, "OP_AND"},
 	{OP_OR, "OP_OR"},
 	{OP_NOT, "OP_NOT"},
@@ -58,7 +62,13 @@ const std::unordered_map<TokenType, std::string> escapeCharNames = {
 	{ANY, "ANY"},
 	{FILE_NAME, "FILE_NAME"},
 	{NEW_LINE, "NEW_LINE"},
-	{VAR_NAME, "VAR_NAME"}
+	{VAR_NAME, "VAR_NAME"},
+
+	// multi symbol tokens
+	{OP_NOT_EQUALS, "OP_NOT_EQUALS"},
+	{OP_IMPLICATION, "OP_IMPLICATION"},
+	{OP_EQUIVALENCE, "OP_EQUIVALENCE"},
+	{OP_XOR, "OP_XOR"},
 };
 
 const std::set<char> escapeCharSet = {
@@ -106,14 +116,19 @@ const std::unordered_map<TokenType, std::string> tokenTypeMap = {
 	{COMMA, ","},
 	{COLON, ":"},
 	{OP_EQUALS, "="},
-	{OP_NOT_EQUALS, "!="},
 	{OP_AND, "&"},
 	{OP_OR, "|"},
 	{OP_NOT, "~"},
 	{OP_FOR_ALL, "!"},
 	{OP_THERE_EXIST, "?"},
 	{OP_LESS_THAN, "<"},
-	{OP_GREATER_THAN, ">"}
+	{OP_GREATER_THAN, ">"},
+
+	// multi symbol tokens
+	{OP_IMPLICATION, "=>"},
+	{OP_EQUIVALENCE, "<=>"},
+	{OP_XOR, "<~>"},
+	{OP_NOT_EQUALS, "!="},
 };
 
 class AtpToken

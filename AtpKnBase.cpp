@@ -39,7 +39,6 @@ void AtpKnBase::parseFormula(std::vector<AtpToken> tokens)
 {
 	std::string name;
 	AtpStatementType type;
-	std::stack<AtpParsingElement> tokenStack;
 	std::vector<AtpToken>::iterator it = tokens.begin();
 
 	AtpToken temp = *it;
@@ -101,8 +100,47 @@ void AtpKnBase::parseFormula(std::vector<AtpToken> tokens)
 	}
 }
 
+const std::set<std::string> multiCharOps = {
+	"=>",
+	"<=>",
+	"<~>",
+	"!="
+};
+
+void resolveMultiCharOperators(std::vector<AtpParsingElement>& elements) {
+	std::vector<AtpParsingElement>::iterator it = elements.begin();
+	while (it != elements.end()) {
+		if (it->valueToken->type == OP_EQUALS && 
+			(it + 1)->valueToken->type == OP_GREATER_THAN) {
+			it->valueToken->type = OP_IMPLICATION;
+			it->valueToken->value = "=>";
+			elements.erase(it + 1);
+		}
+		else if (it->valueToken->type == OP_LESS_THAN) {
+			if ((it + 1)->valueToken->type == OP_NOT &&
+				(it + 2)->valueToken->type == OP_GREATER_THAN) {
+				it->valueToken->type = OP_XOR;
+				it->valueToken->value = "<~>";
+			}
+			else if ((it + 1)->valueToken->type == OP_EQUALS &&
+				(it + 2)->valueToken->type == OP_GREATER_THAN) {
+				it->valueToken->type = OP_EQUIVALENCE;
+				it->valueToken->value = "<=>";
+			}
+			elements.erase(it + 1);
+			elements.erase(it + 1);
+		} else if (it->valueToken->type == OP_FOR_ALL &&
+			(it + 1)->valueToken->type == OP_EQUALS) {
+			it->valueToken->type = OP_NOT_EQUALS;
+			it->valueToken->value = "!=";
+			elements.erase(it + 1);
+		}
+		it++;
+	}
+}
 
 AtpStatement getParsedStatement(AtpKnBase& kb, std::vector<AtpParsingElement> elements) {
+	resolveMultiCharOperators(elements);
 	std::vector<AtpParsingElement>::iterator it = elements.begin();
 	AtpStatement statement;
 	while (it != elements.end()) {
