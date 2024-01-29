@@ -6,15 +6,29 @@
 #include <iostream>
 #include <unordered_map>
 #include "AtpStatement.h"
+/*
+* special predicate will be used for storing equality among AtpTerms
+* equality will act as relation like other predicates
+* to support this following axioms must be included in KB
+* these correspond to Reflexivity, Symmetry and Transitivity
+* ![X] : (X = X)
+* ![X,Y] : (X = Y => Y = X)
+* ![X,Y,Z] : ((X = Y & Y = Z) => X = Z)
+*/
+const std::string equalityPredicate = "@equality@";
+const std::string unequalityPredicate = "@notequality@";
 
 class AtpKnBase
 {
-	std::set<AtpStatement> axioms;
-	std::set<AtpStatement> conjenctures;
-	std::unordered_map<AtpTerm, std::string> termMap;
-	std::unordered_map<std::string, AtpTerm> varMap;
+	std::vector<AtpStatement> axioms;
+	std::vector<AtpStatement> conjenctures;
+	std::vector<AtpFunctor> functors;
+
+	//std::unordered_map<AtpFunctor, std::string> functorMap;
+	//std::unordered_map<std::string, AtpFunctor> varMap;
 
 public:
+	int counter;
 	void init();
 	void addAxiom(AtpStatement statement);
 	void addConjencture(AtpStatement statement);
