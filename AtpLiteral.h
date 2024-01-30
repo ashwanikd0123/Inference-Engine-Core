@@ -6,6 +6,6 @@ class AtpLiteral
 public:
 	int value;
 	bool polarity;
-	AtpPredicate predicate;
+	AtpPredicate *predicate;
 };
 

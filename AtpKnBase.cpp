@@ -8,25 +8,24 @@ void throughError(std::string msg) {
 	exit(8);
 }
 
-AtpStatement getParsedStatement(AtpKnBase &kb, std::vector<AtpParsingElement> elements);
+AtpStatement* getParsedStatement(AtpKnBase &kb, std::vector<AtpParsingElement> elements);
 
 void AtpKnBase::init()
 {
 	this->axioms.clear();
 	this->conjenctures.clear();
-	//this->functorMap.clear();
-	//this->varMap.clear();
+	this->varMap.clear();
 	this->counter = 1;
 }
 
-void AtpKnBase::addAxiom(AtpStatement statement)
+void AtpKnBase::addAxiom(AtpStatement& statement)
 {
-	this->axioms.push_back(statement);
+	this->axioms.push_back(&statement);
 }
 
-void AtpKnBase::addConjencture(AtpStatement statement)
+void AtpKnBase::addConjencture(AtpStatement& statement)
 {
-	this->conjenctures.push_back(statement);
+	this->conjenctures.push_back(&statement);
 }
 
 void checkLanguageValidity(AtpToken langToken) {
@@ -36,7 +35,7 @@ void checkLanguageValidity(AtpToken langToken) {
 	}
 }
 
-void AtpKnBase::parseFormula(std::vector<AtpToken> tokens)
+void AtpKnBase::parseFormula(std::vector<AtpToken>& tokens)
 {
 	std::string name;
 	AtpStatementType type;
@@ -92,10 +91,9 @@ void AtpKnBase::parseFormula(std::vector<AtpToken> tokens)
 	else {
 		throughError("( expected...");
 	}
-
-	AtpStatement statement = getParsedStatement(*this, parsingTokens);
-	statement.name = name;
-	statement.type = type;
+	AtpStatement *statement = getParsedStatement(*this, parsingTokens);
+	statement->name = name;
+	statement->type = type;
 	if (type == AXIOM) {
 		this->axioms.push_back(statement);
 	}
@@ -162,17 +160,12 @@ void resolveEquality(AtpKnBase& kb,std::vector<AtpParsingElement>& parsElems) {
 				if (parsElems[temp + 1].type == _TOKEN &&
 					parsElems[temp + 1].valueToken->type == BRACKET_ROUND_START) {
 					
-					AtpFunctor functor;
-					functor.type = FUNCTOR;
-					functor.name = parsElems[temp + 1].valueToken->value;
-
 					std::stack<AtpParsingElement> elementStack;
 					elementStack.push(parsElems[temp]);
 
 					elementStack.push(parsElems[++temp]);
 					temp++;
 
-					AtpFunctor lastFunctor;
 					bool lastF = true;
 					while (!elementStack.empty()) {
 
@@ -185,21 +178,21 @@ void resolveEquality(AtpKnBase& kb,std::vector<AtpParsingElement>& parsElems) {
 							elementStack.pop();
 							first--;
 
-							std::vector<AtpFunctor> functorSet;
+							std::vector<AtpFunctor*> functorSet;
 
 							while (!(element.type == _TOKEN && 
 								element.valueToken->type == BRACKET_ROUND_START)) {
 								if (element.type == _FUNCTOR) {
-									functorSet.push_back(*(element.valueFunctor));
+									functorSet.push_back(element.valueFunctor);
 								}
 								else if (element.type == _TOKEN && element.valueToken->type == VAR_NAME) {
-									AtpFunctor f;
-									f.type = std::isupper(element.valueToken->value[0]) ? 
+									AtpFunctor *f = new AtpFunctor();
+									f->type = std::isupper(element.valueToken->value[0]) ? 
 										VARIABLE :
 										CONSTANT;
-									f.arity = 0;
-									f.value = kb.counter++;
-									f.name = element.valueToken->value;
+									f->arity = 0;
+									f->value = kb.counter++;
+									f->name = element.valueToken->value;
 									functorSet.push_back(f);
 								}
 								else if (!(element.type == _TOKEN && element.valueToken->type == COMMA)) {
@@ -217,14 +210,14 @@ void resolveEquality(AtpKnBase& kb,std::vector<AtpParsingElement>& parsElems) {
 							first--;
 
 							if (element.type == _TOKEN && element.valueToken->type == VAR_NAME) {
-								AtpFunctor f;
-								f.type = FUNCTOR;
-								f.functors = functorSet;
-								f.name = element.valueToken->value;
-								f.arity += f.functors.size();
-								f.value = kb.counter++;
+								AtpFunctor *f = new AtpFunctor();
+								f->type = FUNCTOR;
+								f->functors = functorSet;
+								f->name = element.valueToken->value;
+								f->arity += f->functors.size();
+								f->value = kb.counter++;
 								element.type = _FUNCTOR;
-								element.valueFunctor = &f;
+								element.valueFunctor = f;
 								first++;
 								int n = last - first + 1;
 								while (n > 0) {
@@ -243,16 +236,16 @@ void resolveEquality(AtpKnBase& kb,std::vector<AtpParsingElement>& parsElems) {
 					}
 				}
 				else {
-					AtpFunctor f;
-					f.type = std::isupper(parsElems[temp].valueToken->value[0]) ?
+					AtpFunctor *f = new AtpFunctor();
+					f->type = std::isupper(parsElems[temp].valueToken->value[0]) ?
 						VARIABLE :
 						CONSTANT;
-					f.arity = 0;
-					f.value = kb.counter++;
-					f.name = parsElems[temp].valueToken->value;
+					f->arity = 0;
+					f->value = kb.counter++;
+					f->name = parsElems[temp].valueToken->value;
 
 					parsElems[temp].type = _FUNCTOR;
-					parsElems[temp].valueFunctor = &f;
+					parsElems[temp].valueFunctor = f;
 				}
 			}
 			else if (!(parsElems[temp].type == _FUNCTOR)) {
@@ -264,16 +257,16 @@ void resolveEquality(AtpKnBase& kb,std::vector<AtpParsingElement>& parsElems) {
 			temp = idx - 1;
 
 			if (parsElems[temp].type == _TOKEN && parsElems[temp].valueToken->type == VAR_NAME) {
-				AtpFunctor f;
-				f.type = std::isupper(parsElems[temp].valueToken->value[0]) ?
+				AtpFunctor *f = new AtpFunctor();
+				f->type = std::isupper(parsElems[temp].valueToken->value[0]) ?
 					VARIABLE :
 					CONSTANT;
-				f.arity = 0;
-				f.value = kb.counter++;
-				f.name = parsElems[temp].valueToken->value;
+				f->arity = 0;
+				f->value = kb.counter++;
+				f->name = parsElems[temp].valueToken->value;
 
 				parsElems[temp].type = _FUNCTOR;
-				parsElems[temp].valueFunctor = &f;
+				parsElems[temp].valueFunctor = f;
 			}
 			else if (parsElems[temp].type == _TOKEN && parsElems[temp].valueToken->type == BRACKET_ROUND_END) {
 				std::stack<AtpParsingElement> elementStack;
@@ -287,25 +280,25 @@ void resolveEquality(AtpKnBase& kb,std::vector<AtpParsingElement>& parsElems) {
 						elementStack.pop();
 						first--;
 
-						AtpFunctor functor;
-						functor.value = kb.counter++;
-						functor.name = parsElems[first].valueToken->value;
+						AtpFunctor *functor = new AtpFunctor();
+						functor->value = kb.counter++;
+						functor->name = parsElems[first].valueToken->value;
 
 						while (!(element.type == _TOKEN &&
 							element.valueToken->type == BRACKET_ROUND_END)) {
 							if (element.type == _FUNCTOR) {
-								functor.functors.push_back((*element.valueFunctor));
-								functor.arity++;
+								functor->functors.push_back(element.valueFunctor);
+								functor->arity++;
 							}
 							else if (element.type == _TOKEN && element.valueToken->type == VAR_NAME) {
-								AtpFunctor f;
-								f.type = std::isupper(element.valueToken->value[0]) ?
+								AtpFunctor *f = new AtpFunctor();
+								f->type = std::isupper(element.valueToken->value[0]) ?
 									VARIABLE :
 									CONSTANT;
-								f.name = element.valueToken->value;
-								f.value = kb.counter++;
-								f.arity = 0;
-								functor.functors.push_back((f));
+								f->name = element.valueToken->value;
+								f->value = kb.counter++;
+								f->arity = 0;
+								functor->functors.push_back(f);
 							}
 							else if (!(element.type == _TOKEN && element.valueToken->type == COMMA)) {
 								errorLog("unexpected token value type...");
@@ -317,7 +310,7 @@ void resolveEquality(AtpKnBase& kb,std::vector<AtpParsingElement>& parsElems) {
 							last++;
 						}
 						parsElems[first].type = _FUNCTOR;
-						parsElems[first].valueFunctor = &functor;
+						parsElems[first].valueFunctor = functor;
 
 						first++;
 						int n = last - first + 1;
@@ -337,19 +330,19 @@ void resolveEquality(AtpKnBase& kb,std::vector<AtpParsingElement>& parsElems) {
 				exit(9);
 			}
 
-			AtpPredicate predicate;
-			predicate.name = equalityPredicate;
-			predicate.value = kb.counter++;
-			predicate.args.push_back(*parsElems[idx - 1].valueFunctor);
-			predicate.args.push_back(*parsElems[idx + 1].valueFunctor);
+			AtpPredicate *predicate = new AtpPredicate();
+			predicate->name = equalityPredicate;
+			predicate->value = kb.counter++;
+			predicate->args.push_back(parsElems[idx - 1].valueFunctor);
+			predicate->args.push_back(parsElems[idx + 1].valueFunctor);
 
-			AtpLiteral literal;
-			literal.polarity = false;
-			literal.value = kb.counter++;
-			literal.predicate = predicate;
+			AtpLiteral *literal = new AtpLiteral();
+			literal->polarity = false;
+			literal->value = kb.counter++;
+			literal->predicate = predicate;
 			
 			parsElems[idx - 1].type = _LITERAL;
-			parsElems[idx - 1].valueLiteral = &literal;
+			parsElems[idx - 1].valueLiteral = literal;
 
 			parsElems.erase(std::next(parsElems.begin(), idx));
 			parsElems.erase(std::next(parsElems.begin(), idx));
@@ -363,10 +356,6 @@ void resolveEquality(AtpKnBase& kb,std::vector<AtpParsingElement>& parsElems) {
 				if (parsElems[temp + 1].type == _TOKEN &&
 					parsElems[temp + 1].valueToken->type == BRACKET_ROUND_START) {
 
-					AtpFunctor functor;
-					functor.type = FUNCTOR;
-					functor.name = parsElems[temp].valueToken->value;
-
 					std::stack<AtpParsingElement> elementStack;
 					elementStack.push(parsElems[temp]);
 					elementStack.push(parsElems[++temp]);
@@ -385,21 +374,21 @@ void resolveEquality(AtpKnBase& kb,std::vector<AtpParsingElement>& parsElems) {
 							elementStack.pop();
 							first--;
 
-							std::vector<AtpFunctor> functorSet;
+							std::vector<AtpFunctor*> functorSet;
 
 							while (!(element.type == _TOKEN &&
 								element.valueToken->type == BRACKET_ROUND_START)) {
 								if (element.type == _FUNCTOR) {
-									functorSet.push_back(*(element.valueFunctor));
+									functorSet.push_back(element.valueFunctor);
 								}
 								else if (element.type == _TOKEN && element.valueToken->type == VAR_NAME) {
-									AtpFunctor f;
-									f.type = std::isupper(element.valueToken->value[0]) ?
+									AtpFunctor *f = new AtpFunctor();
+									f->type = std::isupper(element.valueToken->value[0]) ?
 										VARIABLE :
 										CONSTANT;
-									f.arity = 0;
-									f.value = kb.counter++;
-									f.name = element.valueToken->value;
+									f->arity = 0;
+									f->value = kb.counter++;
+									f->name = element.valueToken->value;
 									functorSet.push_back(f);
 								}
 								else if (!(element.type == _TOKEN && element.valueToken->type == COMMA)) {
@@ -417,14 +406,14 @@ void resolveEquality(AtpKnBase& kb,std::vector<AtpParsingElement>& parsElems) {
 							first--;
 
 							if (element.type == _TOKEN && element.valueToken->type == VAR_NAME) {
-								AtpFunctor f;
-								f.type = FUNCTOR;
-								f.functors = functorSet;
-								f.name = element.valueToken->value;
-								f.arity += f.functors.size();
-								f.value = kb.counter++;
+								AtpFunctor *f = new AtpFunctor();
+								f->type = FUNCTOR;
+								f->functors = functorSet;
+								f->name = element.valueToken->value;
+								f->arity += f->functors.size();
+								f->value = kb.counter++;
 								element.type = _FUNCTOR;
-								element.valueFunctor = &f;
+								element.valueFunctor = f;
 								first++;
 								int n = last - first + 1;
 								while (n > 0) {
@@ -443,16 +432,16 @@ void resolveEquality(AtpKnBase& kb,std::vector<AtpParsingElement>& parsElems) {
 					}
 				}
 				else {
-					AtpFunctor f;
-					f.type = std::isupper(parsElems[temp].valueToken->value[0]) ?
+					AtpFunctor *f = new AtpFunctor();
+					f->type = std::isupper(parsElems[temp].valueToken->value[0]) ?
 						VARIABLE :
 						CONSTANT;
-					f.arity = 0;
-					f.value = kb.counter++;
-					f.name = parsElems[temp].valueToken->value;
+					f->arity = 0;
+					f->value = kb.counter++;
+					f->name = parsElems[temp].valueToken->value;
 
 					parsElems[temp].type = _FUNCTOR;
-					parsElems[temp].valueFunctor = &f;
+					parsElems[temp].valueFunctor = f;
 				}
 			}
 			else if (!(parsElems[temp].type == _FUNCTOR)) {
@@ -464,16 +453,16 @@ void resolveEquality(AtpKnBase& kb,std::vector<AtpParsingElement>& parsElems) {
 			temp = idx - 1;
 
 			if (parsElems[temp].type == _TOKEN && parsElems[temp].valueToken->type == VAR_NAME) {
-				AtpFunctor f1;
-				f1.type = std::isupper(parsElems[temp].valueToken->value[0]) ?
+				AtpFunctor *f1 = new AtpFunctor();
+				f1->type = std::isupper(parsElems[temp].valueToken->value[0]) ?
 					VARIABLE :
 					CONSTANT;
-				f1.arity = 0;
-				f1.value = kb.counter++;
-				f1.name = parsElems[temp].valueToken->value;
+				f1->arity = 0;
+				f1->value = kb.counter++;
+				f1->name = parsElems[temp].valueToken->value;
 
 				parsElems[temp].type = _FUNCTOR;
-				parsElems[temp].valueFunctor = &f1;
+				parsElems[temp].valueFunctor = f1;
 			}
 			else if (parsElems[temp].type == _TOKEN && parsElems[temp].valueToken->type == BRACKET_ROUND_END) {
 				std::stack<AtpParsingElement> elementStack;
@@ -487,25 +476,25 @@ void resolveEquality(AtpKnBase& kb,std::vector<AtpParsingElement>& parsElems) {
 						elementStack.pop();
 						first--;
 
-						AtpFunctor functor;
-						functor.value = kb.counter++;
-						functor.name = parsElems[first].valueToken->value;
+						AtpFunctor *functor = new AtpFunctor();
+						functor->value = kb.counter++;
+						functor->name = parsElems[first].valueToken->value;
 
 						while (!(element.type == _TOKEN &&
 							element.valueToken->type == BRACKET_ROUND_END)) {
 							if (element.type == _FUNCTOR) {
-								functor.functors.push_back((*element.valueFunctor));
-								functor.arity++;
+								functor->functors.push_back(element.valueFunctor);
+								functor->arity++;
 							}
 							else if (element.type == _TOKEN && element.valueToken->type == VAR_NAME) {
-								AtpFunctor f;
-								f.type = std::isupper(element.valueToken->value[0]) ?
+								AtpFunctor *f = new AtpFunctor();
+								f->type = std::isupper(element.valueToken->value[0]) ?
 									VARIABLE :
 									CONSTANT;
-								f.name = element.valueToken->value;
-								f.value = kb.counter++;
-								f.arity = 0;
-								functor.functors.push_back((f));
+								f->name = element.valueToken->value;
+								f->value = kb.counter++;
+								f->arity = 0;
+								functor->functors.push_back(f);
 							}
 							else if (!(element.type == _TOKEN && element.valueToken->type == COMMA)) {
 								errorLog("unexpected token value type...");
@@ -517,7 +506,7 @@ void resolveEquality(AtpKnBase& kb,std::vector<AtpParsingElement>& parsElems) {
 							last++;
 						}
 						parsElems[first].type = _FUNCTOR;
-						parsElems[first].valueFunctor = &functor;
+						parsElems[first].valueFunctor = functor;
 
 						first++;
 						int n = last - first + 1;
@@ -537,20 +526,20 @@ void resolveEquality(AtpKnBase& kb,std::vector<AtpParsingElement>& parsElems) {
 				exit(9);
 			}
 
-			AtpPredicate predicate;
-			predicate.name = equalityPredicate;
-			predicate.value = kb.counter++;
-			predicate.args.push_back(*parsElems[idx - 1].valueFunctor);
-			predicate.args.push_back(*parsElems[idx + 1].valueFunctor);
+			AtpPredicate *predicate = new AtpPredicate();
+			predicate->name = equalityPredicate;
+			predicate->value = kb.counter++;
+			predicate->args.push_back(parsElems[idx - 1].valueFunctor);
+			predicate->args.push_back(parsElems[idx + 1].valueFunctor);
 
-			AtpLiteral literal;
-			literal.polarity = false;
-			literal.value = kb.counter++;
-			literal.predicate = predicate;
+			AtpLiteral *literal = new AtpLiteral();
+			literal->polarity = false;
+			literal->value = kb.counter++;
+			literal->predicate = predicate;
 
 			idx--;
 			parsElems[idx].type = _LITERAL;
-			parsElems[idx].valueLiteral = &literal;
+			parsElems[idx].valueLiteral = literal;
 			idx++;
 			parsElems.erase(std::next(parsElems.begin(), idx));
 			parsElems.erase(std::next(parsElems.begin(), idx));
@@ -560,14 +549,20 @@ void resolveEquality(AtpKnBase& kb,std::vector<AtpParsingElement>& parsElems) {
 	}
 }
 
-void resolvePredicatesAndFunctions(std::vector<AtpParsingElement>& elements) {
+void resolveVariables(AtpStatement& statement, std::vector<AtpParsingElement>& elements) {
+
+}
+
+void resolvePredicatesAndFunctions(AtpFormula& formula, std::vector<AtpParsingElement>& elements) {
 	std::vector<AtpParsingElement>::iterator it = elements.begin();
 	while (it != elements.end()) {
 		it++;
 	}
 }
 
-AtpStatement getParsedStatement(AtpKnBase& kb, std::vector<AtpParsingElement> elements) {
+AtpStatement* getParsedStatement(AtpKnBase& kb, std::vector<AtpParsingElement> elements) {
+	resolveMultiCharOperators(elements);
+
 	// print statement
 	std::vector<AtpParsingElement>::iterator it = elements.begin();
 	while (it != elements.end()) {
@@ -576,10 +571,16 @@ AtpStatement getParsedStatement(AtpKnBase& kb, std::vector<AtpParsingElement> el
 	}
 	std::cout << std::endl;
 
-	resolveMultiCharOperators(elements);
+	AtpStatement *statement = new AtpStatement();
+
+	// resolve variables
+	resolveVariables(*statement, elements);
+
+	// resolve equality
 	resolveEquality(kb, elements);
 	
-	AtpStatement statement;
+	// resolve predicates
+	resolvePredicatesAndFunctions(*(statement->formula), elements);
 	
 	return statement;
 }

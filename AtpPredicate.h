@@ -9,6 +9,6 @@ public:
 	int value;
 	std::string name;
 
-	std::vector<AtpFunctor> args;
+	std::vector<AtpFunctor*> args;
 };
 

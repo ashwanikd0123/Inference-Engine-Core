@@ -17,5 +17,5 @@ public:
 
 	int arity;
 	AtpFunctorType type;
-	std::vector<AtpFunctor> functors;
+	std::vector<AtpFunctor*> functors;
 };

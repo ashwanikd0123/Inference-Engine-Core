@@ -1,6 +1,6 @@
 #pragma once
 #include "AtpFormula.h"
-
+#include <unordered_map>
 enum AtpStatementType {
 	AXIOM,
 	CONJENCTURE
@@ -12,8 +12,10 @@ public:
 	int value;
 	std::string name;
 	
-	std::vector<AtpFunctor> functors;
-	AtpFormula formula;
+	AtpFormula *formula;
 	AtpStatementType type;
+
+	std::vector<AtpFunctor*> functors;
+	std::unordered_map<std::string, AtpFunctor*> varMap;
 };
 

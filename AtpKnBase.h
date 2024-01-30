@@ -20,19 +20,19 @@ const std::string unequalityPredicate = "@notequality@";
 
 class AtpKnBase
 {
-	std::vector<AtpStatement> axioms;
-	std::vector<AtpStatement> conjenctures;
-	std::vector<AtpFunctor> functors;
-
-	//std::unordered_map<AtpFunctor, std::string> functorMap;
-	//std::unordered_map<std::string, AtpFunctor> varMap;
-
 public:
 	int counter;
+
+	std::vector<AtpStatement*> axioms;
+	std::vector<AtpStatement*> conjenctures;
+	std::vector<AtpFunctor*> functors;
+
+	std::unordered_map<std::string, AtpFunctor*> varMap;
+
 	void init();
-	void addAxiom(AtpStatement statement);
-	void addConjencture(AtpStatement statement);
-	void parseFormula(std::vector<AtpToken> tokens);
+	void addAxiom(AtpStatement& statement);
+	void addConjencture(AtpStatement& statement);
+	void parseFormula(std::vector<AtpToken>& tokens);
 };
 
 
