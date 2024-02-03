@@ -759,7 +759,7 @@ void resolveVariables(AtpKnBase& kb, AtpStatement& statement, std::vector<AtpPar
 						 if (statement.varMap.size() <= 0) {
 							 AtpFunctor* f = new AtpFunctor();
 							 f->arity = 0;
-							 f->name = e.valueToken->value;
+							 f->name = skolemNamePre + std::to_string(kb.skolemCount++);
 							 f->type = CONSTANT;
 							 f->value = kb.counter++;
 							 statement.varMap[e.valueToken->value] = f;
@@ -767,7 +767,7 @@ void resolveVariables(AtpKnBase& kb, AtpStatement& statement, std::vector<AtpPar
 						 else {
 							 AtpFunctor* f = new AtpFunctor();
 							 f->arity = statement.varMap.size();
-							 f->name = e.valueToken->value;
+							 f->name = skolemNamePre + std::to_string(kb.skolemCount++);
 							 f->type = FUNCTOR;
 							 f->value = kb.counter++;
 							 for (auto& it : statement.varMap) {
@@ -792,6 +792,10 @@ void resolveVariables(AtpKnBase& kb, AtpStatement& statement, std::vector<AtpPar
 	resolveVariablesInPredicate(statement, elements);
 }
 
+void convertCNFForm(AtpStatement& statement, std::vector<AtpParsingElement>& elements) {
+
+}
+
 AtpStatement* getParsedStatement(AtpKnBase& kb, std::vector<AtpParsingElement> elements) {
 	resolveMultiCharOperators(elements);
 
@@ -814,5 +818,8 @@ AtpStatement* getParsedStatement(AtpKnBase& kb, std::vector<AtpParsingElement> e
 	// resolve variables
 	resolveVariables(kb, *statement, elements);
 	
+	// convert to cnf form (and of ors) (conjunctive normal form)
+	convertCNFForm(*statement, elements);
+
 	return statement;
 }
