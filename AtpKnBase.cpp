@@ -1,4 +1,4 @@
-#include "AtpKnBase.h"
+﻿#include "AtpKnBase.h"
 #include "AtpParsingElement.h"
 
 extern void errorLog(std::string msg);
@@ -16,6 +16,7 @@ void AtpKnBase::init()
 	this->conjenctures.clear();
 	this->varMap.clear();
 	this->counter = 1;
+	this->skolemCount = 0;
 }
 
 void AtpKnBase::addAxiom(AtpStatement& statement)
@@ -147,7 +148,7 @@ void resolveMultiCharOperators(std::vector<AtpParsingElement>& elements) {
 	}
 }
 
-void resolveEquality(AtpKnBase& kb,std::vector<AtpParsingElement>& parsElems) {
+void resolveEquality(AtpKnBase& kb, std::vector<AtpParsingElement>& parsElems) {
 	int temp, last, first;
 	int idx = 0;
 	while (idx < parsElems.size()) {
@@ -549,14 +550,178 @@ void resolveEquality(AtpKnBase& kb,std::vector<AtpParsingElement>& parsElems) {
 	}
 }
 
-void resolveVariables(AtpStatement& statement, std::vector<AtpParsingElement>& elements) {
+// sgould be done in the lasṭ
+void resolveVariables(AtpKnBase& kb, AtpStatement& statement, std::vector<AtpParsingElement>& elements) {
 
+	int idx = 0;
+	std::stack<AtpParsingElement> fStack;
+	AtpParsingElement e;
+	e.type = _TOKEN;
+	e.valueToken = new AtpToken(BRACKET_ROUND_START,"(");
+	fStack.push(e);
+	while (idx < elements.size()) {
+		AtpToken element = *(elements[idx].valueToken);
+		if (element.type == OP_FOR_ALL) {
+			idx++;
+			if (element.type == BRACKET_SQUARE_START) {
+				while (element.type != BRACKET_SQUARE_END) {
+					if (element.type == VAR_NAME) {
+						AtpFunctor* f;
+						if (statement.varMap.find(element.value) == statement.varMap.end()) {
+							f = new AtpFunctor();
+							f->arity = 0;
+							f->type = VARIABLE;
+							f->name = element.value;
+							statement.varMap[element.value] = f;
+						}
+						else {
+							f = statement.varMap[element.value];
+						}
+						AtpParsingElement e;
+						e.type = _FUNCTOR;
+						e.valueFunctor = f;
+						fStack.push(e);
+					}
+					else if (element.type != COMMA) {
+						errorLog(", expected...");
+						exit(9);
+					}
+					element = *(elements[++idx].valueToken);
+				}
+			}
+			else {
+				errorLog("square bracket expected...");
+				exit(9);
+			}
+		}
+		else if (element.type == OP_THERE_EXIST) {
+			
+		}
+		idx++;
+	}
 }
 
-void resolvePredicatesAndFunctions(AtpFormula& formula, std::vector<AtpParsingElement>& elements) {
-	std::vector<AtpParsingElement>::iterator it = elements.begin();
-	while (it != elements.end()) {
-		it++;
+void resolvePredicatesAndFunctions(AtpKnBase& kb, AtpFormula& formula, std::vector<AtpParsingElement>& elements) {
+	int idx = 0;
+
+	while (idx < elements.size()) {
+		AtpParsingElement e = elements[idx];
+		if (e.type == _TOKEN) {
+			switch (e.valueToken->type)
+			{
+			case OP_FOR_ALL:
+			case OP_THERE_EXIST:
+				while (!(e.type == _TOKEN && e.valueToken->type == COLON)) {
+					e = elements[++idx];
+				}
+				break;
+
+			case VAR_NAME:
+				int pIdx = idx++;
+				e = elements[idx++];
+				if (e.type == _TOKEN && e.valueToken->type == BRACKET_ROUND_START) {
+					std::stack<AtpParsingElement> elementStack;
+					elementStack.push(elements[pIdx]);
+					elementStack.push(e);
+
+					AtpFunctor* f = NULL;
+					while (!elementStack.empty()) {
+						e = elements[idx++];
+
+						if (e.type == _TOKEN && e.valueToken->type == BRACKET_ROUND_END) {
+							int last = idx - 1;
+
+							e = elementStack.top();
+							elementStack.pop();
+							int first = last - 1;
+
+							std::vector<AtpFunctor*> functorSet;
+
+							while (!(e.type == _TOKEN &&
+								e.valueToken->type == BRACKET_ROUND_START)) {
+								if (e.type == _FUNCTOR) {
+									functorSet.push_back(e.valueFunctor);
+								}
+								else if (e.type == _TOKEN && e.valueToken->type == VAR_NAME) {
+									AtpFunctor* f = new AtpFunctor();
+									f->type = std::isupper(e.valueToken->value[0]) ?
+										VARIABLE :
+										CONSTANT;
+									f->arity = 0;
+									f->value = kb.counter++;
+									f->name = e.valueToken->value;
+									functorSet.push_back(f);
+								}
+								else if (!(e.type == _TOKEN && e.valueToken->type == COMMA)) {
+									errorLog("unexpected token value type...");
+									exit(9);
+								}
+
+								e = elementStack.top();
+								elementStack.pop();
+								first--;
+							}
+
+							e = elementStack.top();
+							elementStack.pop();
+							first--;
+
+							// add to t a new function
+							
+							if (e.type == _TOKEN && e.valueToken->type == VAR_NAME) {
+								if (first == pIdx) {
+									AtpPredicate* pred = new AtpPredicate();
+									pred->args = functorSet;
+									pred->name = e.valueToken->value;
+									pred->value = kb.counter++;
+
+									elements[first].type = _PREDICATE;
+									elements[first].valuePredicate = pred;
+								}
+								else {
+									AtpFunctor* f = new AtpFunctor();
+									f->type = std::isupper(e.valueToken->value[0]) ?
+										VARIABLE :
+										CONSTANT;
+									f->arity = 0;
+									f->value = kb.counter++;
+									f->name = e.valueToken->value;
+									f->functors = functorSet;
+
+									// set it at first
+									elements[first].type = _FUNCTOR;
+									elements[first].valueFunctor = f;
+								}
+
+								idx = first + 1;
+							}
+							else {
+								errorLog("unexpected token value type...");
+								exit(9);
+							}
+
+							int n = last - first;
+							while (n > 0) {
+								elements.erase(std::next(elements.begin(), first + 1));
+								n--;
+							}
+						}
+						else {
+							elementStack.push(e);
+						}
+					}
+				}
+				else {
+					AtpPredicate* pred = new AtpPredicate();
+					pred->name = elements[pIdx].valueToken->value;
+					pred->value = kb.counter++;
+					elements[pIdx].type = _PREDICATE;
+					elements[pIdx].valuePredicate = pred;
+				}
+				continue;
+			}
+		}
+		idx++;
 	}
 }
 
@@ -573,14 +738,14 @@ AtpStatement* getParsedStatement(AtpKnBase& kb, std::vector<AtpParsingElement> e
 
 	AtpStatement *statement = new AtpStatement();
 
-	// resolve variables
-	resolveVariables(*statement, elements);
-
 	// resolve equality
 	resolveEquality(kb, elements);
 	
 	// resolve predicates
-	resolvePredicatesAndFunctions(*(statement->formula), elements);
+	resolvePredicatesAndFunctions(kb, *(statement->formula), elements);
+
+	// resolve variables
+	//resolveVariables(kb, *statement, elements);
 	
 	return statement;
 }

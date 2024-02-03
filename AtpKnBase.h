@@ -17,11 +17,13 @@
 */
 const std::string equalityPredicate = "@equality@";
 const std::string unequalityPredicate = "@notequality@";
+const std::string skolemNamePre = "skolem";
 
 class AtpKnBase
 {
 public:
 	int counter;
+	int skolemCount;
 
 	std::vector<AtpStatement*> axioms;
 	std::vector<AtpStatement*> conjenctures;

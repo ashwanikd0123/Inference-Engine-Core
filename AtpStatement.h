@@ -15,7 +15,11 @@ public:
 	AtpFormula *formula;
 	AtpStatementType type;
 
-	std::vector<AtpFunctor*> functors;
+	std::vector<AtpFormula*> formulas;
 	std::unordered_map<std::string, AtpFunctor*> varMap;
+
+	AtpStatement() {
+		formula = new AtpFormula();
+	}
 };
 
